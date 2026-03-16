@@ -8,18 +8,26 @@ export interface PresetInfo {
 export const PRESETS: PresetInfo[] = [
   {
     name: "minimal",
-    description: "Clean, professional. Soft sine chimes and gentle pulses.",
+    description: "Clean UI tones. Confirmation chimes, question upticks, soft fades.",
   },
   {
     name: "sci-fi",
-    description: "Crisp military sci-fi. Comm beeps and adjutant-style alerts.",
+    description: "Futuristic. Force fields, laser chirps, computer hum, metal impacts.",
   },
   {
     name: "fantasy",
-    description: "Fantasy RPG. Quest complete fanfare, raid warnings, level-up sparkle.",
+    description: "Plucked strings and steel drums. Pizzicato flourishes and ethereal chimes.",
   },
   {
     name: "retro",
-    description: "8-bit retro. Chip-tune coins, power-ups, and game-over jingles.",
+    description: "8-bit chiptune. Victory fanfares, powerups, and classic error buzzes.",
+  },
+  {
+    name: "doom",
+    description: "Freedoom FPS. Shotgun racks, item pickups, oof grunts, radio chatter.",
+  },
+  {
+    name: "nasa",
+    description: "Mission control. Quindar beeps, radio static, Apollo master alarm.",
   },
 ];

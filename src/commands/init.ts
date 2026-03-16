@@ -30,8 +30,8 @@ export async function initCommand(): Promise<void> {
     console.log(`    ${i + 1}. ${p.name} — ${p.description}`);
   });
 
-  const presetChoice = await ask(rl, "\n  Pick a preset [1-4, default: 1]: ");
-  const presetIndex = Math.max(0, Math.min(3, (parseInt(presetChoice) || 1) - 1));
+  const presetChoice = await ask(rl, `\n  Pick a preset [1-${PRESETS.length}, default: 1]: `);
+  const presetIndex = Math.max(0, Math.min(PRESETS.length - 1, (parseInt(presetChoice) || 1) - 1));
   const preset = PRESETS[presetIndex].name;
 
   // Update config with preset so resolver picks it up

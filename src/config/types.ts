@@ -1,5 +1,5 @@
 export interface ClaudeDingConfig {
-  preset: "sci-fi" | "fantasy" | "retro" | "minimal" | "custom";
+  preset: "sci-fi" | "fantasy" | "retro" | "minimal" | "doom" | "nasa" | "custom";
 
   sounds: {
     taskComplete?: string;
@@ -37,6 +37,6 @@ export const SOUND_NAMES: SoundName[] = [
   "session-start",
 ];
 
-export type PresetName = "sci-fi" | "fantasy" | "retro" | "minimal";
+export type PresetName = "sci-fi" | "fantasy" | "retro" | "minimal" | "doom" | "nasa";
 
-export const PRESET_NAMES: PresetName[] = ["sci-fi", "fantasy", "retro", "minimal"];
+export const PRESET_NAMES: PresetName[] = ["sci-fi", "fantasy", "retro", "minimal", "doom", "nasa"];
