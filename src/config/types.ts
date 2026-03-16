@@ -20,6 +20,17 @@ export interface ClaudeDingConfig {
     readSummary: boolean;
   };
 
+  voice?: {
+    enabled: boolean;
+    wakeWord: boolean;
+    wakePhrase: string;
+    autoSend: boolean;
+    terminal: "iterm2" | "terminal" | "auto";
+    silenceTimeout: number;
+    language: string;
+    whisperModel: string;
+  };
+
   quietHours?: {
     enabled: boolean;
     start: string;

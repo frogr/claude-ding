@@ -1,5 +1,7 @@
+import type { ChildProcess } from "child_process";
+
 export interface TTSEngine {
-  speak(text: string, voice?: string, speed?: number): Promise<void>;
+  speak(text: string, voice?: string, speed?: number, options?: { await?: boolean }): Promise<ChildProcess | void>;
 }
 
 // TTS engines will be implemented in Phase 2
