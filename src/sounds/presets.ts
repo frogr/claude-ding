@@ -11,15 +11,15 @@ export const PRESETS: PresetInfo[] = [
     description: "Clean, professional. Soft sine chimes and gentle pulses.",
   },
   {
-    name: "starcraft",
+    name: "sci-fi",
     description: "Crisp military sci-fi. Comm beeps and adjutant-style alerts.",
   },
   {
-    name: "wow",
+    name: "fantasy",
     description: "Fantasy RPG. Quest complete fanfare, raid warnings, level-up sparkle.",
   },
   {
-    name: "arcade",
+    name: "retro",
     description: "8-bit retro. Chip-tune coins, power-ups, and game-over jingles.",
   },
 ];

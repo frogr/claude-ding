@@ -7,6 +7,7 @@ import { installCommand } from "./commands/install-hooks.js";
 import { uninstallCommand } from "./commands/uninstall.js";
 import { playCommand } from "./commands/play.js";
 import { ttsCommand } from "./commands/tts.js";
+import { soundsListCommand, soundsSetCommand, soundsResetCommand } from "./commands/sounds.js";
 import { PRESETS } from "./sounds/presets.js";
 import { loadConfig, updateConfig } from "./config/loader.js";
 import { log } from "./utils/logger.js";
@@ -67,7 +68,7 @@ program
     const config = loadConfig();
 
     if (key === "preset") {
-      const valid = ["starcraft", "wow", "arcade", "minimal", "custom"];
+      const valid = ["sci-fi", "fantasy", "retro", "minimal", "custom"];
       if (!valid.includes(value)) {
         log.error(`Invalid preset. Choose from: ${valid.join(", ")}`);
         process.exit(1);
@@ -86,6 +87,27 @@ program
       log.error(`Unknown config key: ${key}. Valid keys: preset, volume`);
       process.exit(1);
     }
+  });
+
+const soundsCmd = program
+  .command("sounds")
+  .description("List current sounds and where they resolve to")
+  .action(() => {
+    soundsListCommand();
+  });
+
+soundsCmd
+  .command("set <sound-name> <path-to-file>")
+  .description("Set a custom sound file for an event")
+  .action((soundName: string, filePath: string) => {
+    soundsSetCommand(soundName, filePath);
+  });
+
+soundsCmd
+  .command("reset [sound-name]")
+  .description("Remove custom override (or all if no name given)")
+  .action((soundName?: string) => {
+    soundsResetCommand(soundName);
   });
 
 program.parse();

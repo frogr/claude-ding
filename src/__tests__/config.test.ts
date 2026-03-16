@@ -30,12 +30,12 @@ describe("config", () => {
   it("saves and loads config", async () => {
     const { loadConfig, saveConfig } = await import("../config/loader.js");
     const config = loadConfig();
-    config.preset = "starcraft";
+    config.preset = "sci-fi";
     config.volume = 50;
     saveConfig(config);
 
     const loaded = loadConfig();
-    expect(loaded.preset).toBe("starcraft");
+    expect(loaded.preset).toBe("sci-fi");
     expect(loaded.volume).toBe(50);
   });
 });
@@ -46,6 +46,6 @@ describe("config types", () => {
     expect(SOUND_NAMES).toContain("task-complete");
     expect(SOUND_NAMES).toContain("error");
     expect(PRESET_NAMES).toContain("minimal");
-    expect(PRESET_NAMES).toContain("starcraft");
+    expect(PRESET_NAMES).toContain("sci-fi");
   });
 });

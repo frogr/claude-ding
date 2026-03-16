@@ -30,14 +30,14 @@ claude-ding install           # Add hooks to Claude Code
 | Preset | Vibe |
 |--------|------|
 | **minimal** | Clean, professional. Soft sine chimes and gentle pulses. |
-| **starcraft** | Crisp military sci-fi. Comm beeps and adjutant-style alerts. |
-| **wow** | Fantasy RPG. Quest complete fanfare, raid warnings, level-up sparkle. |
-| **arcade** | 8-bit retro. Chip-tune coins, power-ups, and game-over jingles. |
+| **sci-fi** | Crisp military sci-fi. Comm beeps and adjutant-style alerts. |
+| **fantasy** | Fantasy RPG. Quest complete fanfare, raid warnings, level-up sparkle. |
+| **retro** | 8-bit retro. Chip-tune coins, power-ups, and game-over jingles. |
 
 Switch presets anytime:
 
 ```bash
-claude-ding set preset starcraft
+claude-ding set preset sci-fi
 ```
 
 ## When Sounds Play
@@ -56,7 +56,7 @@ Config lives at `~/.claude-ding/config.json`. Edit directly or use the CLI:
 
 ```bash
 claude-ding set volume 50
-claude-ding set preset wow
+claude-ding set preset fantasy
 ```
 
 You can also override individual sounds with custom audio files:
@@ -93,6 +93,9 @@ claude-ding test [sound]      Preview all sounds or a specific one
 claude-ding play <sound>      Play a sound (used internally by hooks)
 claude-ding presets           List available sound presets
 claude-ding set <key> <value> Update a config value (preset, volume)
+claude-ding sounds             List current sounds and where they resolve
+claude-ding sounds set <n> <p> Set a custom sound file for an event
+claude-ding sounds reset [n]   Remove custom override(s), revert to preset
 ```
 
 ## How It Works
