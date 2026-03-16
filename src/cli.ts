@@ -10,6 +10,7 @@ import { ttsCommand } from "./commands/tts.js";
 import { soundsListCommand, soundsSetCommand, soundsResetCommand } from "./commands/sounds.js";
 import { PRESETS } from "./sounds/presets.js";
 import { loadConfig, updateConfig } from "./config/loader.js";
+import type { PresetName } from "./config/types.js";
 import { log } from "./utils/logger.js";
 
 const program = new Command();
@@ -51,14 +52,26 @@ program
   .action(ttsCommand);
 
 program
-  .command("presets")
-  .description("List available sound presets")
-  .action(() => {
-    console.log("\n  Available presets:\n");
-    for (const p of PRESETS) {
-      console.log(`    ${p.name.padEnd(12)} ${p.description}`);
+  .command("preset [name]")
+  .description("Show or change the active sound preset")
+  .action((name?: string) => {
+    if (!name) {
+      const config = loadConfig();
+      console.log("\n  Available presets:\n");
+      for (const p of PRESETS) {
+        const marker = p.name === config.preset ? " ←" : "";
+        console.log(`    ${p.name.padEnd(12)} ${p.description}${marker}`);
+      }
+      console.log();
+      return;
     }
-    console.log();
+    const valid: string[] = PRESETS.map((p) => p.name);
+    if (!valid.includes(name)) {
+      log.error(`Unknown preset "${name}". Available: ${valid.join(", ")}`);
+      process.exit(1);
+    }
+    updateConfig({ preset: name as PresetName });
+    log.success(`Preset changed to ${name}`);
   });
 
 program
