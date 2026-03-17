@@ -1,9 +1,9 @@
 import fs from "fs";
-import { log } from "../utils/logger.js";
 
 /**
  * Read the last assistant message from a Claude Code transcript file.
- * The transcript is a JSONL file where each line is a JSON object.
+ * Transcript is JSONL with entries like:
+ *   {"type":"assistant","message":{"content":[{"type":"text","text":"..."}]}}
  */
 export function readLastAssistantMessage(transcriptPath: string): string | null {
   if (!transcriptPath || !fs.existsSync(transcriptPath)) {
@@ -14,23 +14,28 @@ export function readLastAssistantMessage(transcriptPath: string): string | null 
     const content = fs.readFileSync(transcriptPath, "utf-8");
     const lines = content.trim().split("\n").filter(Boolean);
 
-    // Walk backwards to find the last assistant message
+    // Walk backwards to find the last assistant message with text
     for (let i = lines.length - 1; i >= 0; i--) {
       try {
         const entry = JSON.parse(lines[i]);
-        if (entry.role === "assistant" && entry.message) {
-          return extractTextContent(entry.message);
+
+        // Primary format: type=assistant, message.content[]
+        if (entry.type === "assistant" && entry.message?.content) {
+          const text = extractTextContent(entry.message.content);
+          if (text) return text;
         }
-        // Also handle the format where content is directly on the entry
-        if (entry.type === "assistant" && entry.content) {
-          return extractTextContent(entry.content);
+
+        // Fallback: role=assistant, content[]
+        if (entry.role === "assistant" && entry.content) {
+          const text = extractTextContent(entry.content);
+          if (text) return text;
         }
       } catch {
         continue;
       }
     }
-  } catch (err: any) {
-    log.dim(`  Could not read transcript: ${err.message}`);
+  } catch {
+    // Can't read transcript
   }
 
   return null;
@@ -52,18 +57,16 @@ function extractTextContent(content: any): string | null {
 }
 
 /**
- * Truncate text to approximately the first N words.
+ * Extract the <tts>...</tts> tag from Claude's response.
+ * Claude is prompted (via CLAUDE.md) to include this tag with a brief
+ * spoken summary at the end of its responses.
  */
-export function truncateToWords(text: string, maxWords: number): string {
-  const words = text.split(/\s+/);
-  if (words.length <= maxWords) return text;
-  return words.slice(0, maxWords).join(" ") + "...";
-}
-
-/**
- * Extract just the first sentence from text.
- */
-export function firstSentence(text: string): string {
-  const match = text.match(/^[^.!?]+[.!?]/);
-  return match ? match[0].trim() : truncateToWords(text, 15);
+export function extractTTSSummary(text: string): string | null {
+  // Find ALL <tts> tags and use the last one — earlier mentions
+  // might be in prose/code discussing the tag itself.
+  const matches = [...text.matchAll(/<tts>([\s\S]*?)<\/tts>/g)];
+  if (matches.length > 0) {
+    return matches[matches.length - 1][1].trim() || null;
+  }
+  return null;
 }

@@ -1,19 +1,16 @@
-import { SayEngine } from "../tts/say.js";
+import { spawn } from "child_process";
+import { readLastAssistantMessage, extractTTSSummary } from "../voice/response-reader.js";
+import { detectPlatform } from "../utils/platform.js";
 import { loadConfig } from "../config/loader.js";
-import { readLastAssistantMessage, truncateToWords, firstSentence } from "../voice/response-reader.js";
-import { log } from "../utils/logger.js";
 
 /**
- * Hook command: reads the last Claude response from transcript and speaks it.
- * Called by the Stop hook. Reads hook input from stdin (JSON with transcript_path).
+ * Hook command: reads the last Claude response, extracts <tts> tag,
+ * and speaks it aloud. Falls back to "Done" if no tag found.
+ *
+ * Must be fast — spawns `say` detached and exits immediately.
  */
 export async function speakResponseCommand(): Promise<void> {
   const config = loadConfig();
-  const tts = config.tts;
-
-  if (!tts.readResponses && !tts.readSummary) {
-    return;
-  }
 
   // Read hook input from stdin
   let hookInput: any = {};
@@ -23,35 +20,47 @@ export async function speakResponseCommand(): Promise<void> {
       chunks.push(chunk);
     }
     const raw = Buffer.concat(chunks).toString("utf-8").trim();
-    if (raw) {
-      hookInput = JSON.parse(raw);
-    }
+    if (raw) hookInput = JSON.parse(raw);
   } catch {
-    // No stdin or invalid JSON — try to speak a generic message
+    // No stdin or invalid JSON
   }
 
+  let textToSpeak = "Done.";
+
+  // Prefer last_assistant_message from hook input (Stop event provides it directly)
+  const lastMessage = hookInput.last_assistant_message;
   const transcriptPath = hookInput.transcript_path;
 
-  let textToSpeak: string;
-
-  if (transcriptPath) {
-    const message = readLastAssistantMessage(transcriptPath);
-    if (!message) {
-      textToSpeak = "Done.";
-    } else if (tts.readSummary) {
-      textToSpeak = firstSentence(message);
-    } else {
-      textToSpeak = truncateToWords(message, 50);
+  if (lastMessage) {
+    const tts = extractTTSSummary(lastMessage);
+    if (tts) {
+      textToSpeak = tts;
     }
-  } else {
-    // No transcript available — use the message field from hook input if present
-    textToSpeak = hookInput.message || "Done.";
+  } else if (transcriptPath) {
+    const message = readLastAssistantMessage(transcriptPath);
+    if (message) {
+      const tts = extractTTSSummary(message);
+      if (tts) {
+        textToSpeak = tts;
+      }
+    }
   }
 
-  const engine = new SayEngine();
-  try {
-    await engine.speak(textToSpeak, tts.voice || undefined, tts.speed);
-  } catch (err: any) {
-    log.error(`TTS failed: ${err.message}`);
+  // Speak detached so the hook exits immediately
+  const platform = detectPlatform();
+  if (platform === "macos") {
+    const args = [textToSpeak];
+    const voice = config.tts.voice;
+    if (voice) args.push("-v", voice);
+    if (config.tts.speed) args.push("-r", String(Math.round(config.tts.speed * 200)));
+
+    const proc = spawn("say", args, { detached: true, stdio: "ignore" });
+    proc.unref();
+  } else if (platform === "linux") {
+    const args = [textToSpeak];
+    if (config.tts.speed) args.push("-s", String(Math.round(config.tts.speed * 175)));
+
+    const proc = spawn("espeak-ng", args, { detached: true, stdio: "ignore" });
+    proc.unref();
   }
 }

@@ -4,14 +4,3 @@ export enum VoiceState {
   TRANSCRIBING = "transcribing",
   INJECTING = "injecting",
 }
-
-export interface VoiceConfig {
-  enabled: boolean;
-  wakeWord: boolean;
-  wakePhrase: string;
-  autoSend: boolean;
-  terminal: "iterm2" | "terminal" | "auto";
-  silenceTimeout: number;
-  language: string;
-  whisperModel: string;
-}

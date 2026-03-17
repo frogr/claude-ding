@@ -66,56 +66,6 @@ export function startRecording(): ActiveRecording {
   return { stop, process: proc, filePath };
 }
 
-/**
- * Legacy silence-based recording for wake word / daemon mode.
- * Uses SoX silence detection to auto-stop.
- */
-export function recordWithSilenceDetection(silenceTimeout = 3.0): Promise<RecordingResult> {
-  return new Promise((resolve, reject) => {
-    fs.mkdirSync(TMP_DIR, { recursive: true });
-    const filePath = path.join(TMP_DIR, `recording-${Date.now()}.wav`);
-    const startTime = Date.now();
-
-    // More forgiving silence detection:
-    // - Leading: start immediately (no skip)
-    // - Trailing: stop after silenceTimeout seconds below 2% amplitude
-    const args = [
-      "-q",
-      filePath,
-      "rate", "16000",
-      "channels", "1",
-      "silence", "1", "0.1", "1%",    // start: need 0.1s above 1% (very easy trigger)
-      "1", String(silenceTimeout), "2%", // stop: need full timeout below 2%
-    ];
-
-    let proc: ChildProcess;
-    try {
-      proc = spawn("rec", args, { stdio: ["ignore", "pipe", "pipe"] });
-    } catch {
-      reject(new Error("Failed to start 'rec'. Install SoX: brew install sox"));
-      return;
-    }
-
-    let stderr = "";
-    proc.stderr?.on("data", (chunk: Buffer) => {
-      stderr += chunk.toString();
-    });
-
-    proc.on("error", (err) => {
-      reject(new Error(`rec failed: ${err.message}. Install SoX: brew install sox`));
-    });
-
-    proc.on("close", (code) => {
-      const durationMs = Date.now() - startTime;
-      if (isValidRecording(filePath)) {
-        resolve({ filePath, durationMs });
-      } else {
-        reject(new Error(`Recording failed (code ${code}): ${stderr}`));
-      }
-    });
-  });
-}
-
 function isValidRecording(filePath: string): boolean {
   try {
     const stat = fs.statSync(filePath);

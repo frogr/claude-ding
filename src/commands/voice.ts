@@ -3,7 +3,6 @@ import { VoiceState } from "../voice/types.js";
 import { startRecording, cleanupRecording, type ActiveRecording } from "../voice/recorder.js";
 import { ensureModel, transcribe } from "../voice/transcriber.js";
 import { injectText } from "../voice/injector.js";
-import { VoiceDaemon } from "../voice/daemon.js";
 import { loadConfig } from "../config/loader.js";
 import { play } from "../sounds/player.js";
 import { resolveSound } from "../sounds/resolver.js";
@@ -17,15 +16,12 @@ const CYAN = "\x1b[36m";
 const DIM = "\x1b[2m";
 const BOLD = "\x1b[1m";
 
-export async function voiceCommand(options: { wake?: boolean } = {}): Promise<void> {
+export async function voiceCommand(): Promise<void> {
   const config = loadConfig();
   const voiceConfig = config.voice ?? {
     enabled: true,
-    wakeWord: false,
-    wakePhrase: "hey claude",
     autoSend: true,
     terminal: "auto" as const,
-    silenceTimeout: 3.0,
     whisperModel: "ggml-base.en.bin",
     language: "en",
   };
@@ -38,27 +34,6 @@ export async function voiceCommand(options: { wake?: boolean } = {}): Promise<vo
     modelPath = await ensureModel(voiceConfig.whisperModel ?? "ggml-base.en.bin");
   } catch (err: any) {
     log.error(`Failed to prepare whisper model: ${err.message}`);
-    return;
-  }
-
-  const useWakeWord = options.wake ?? voiceConfig.wakeWord ?? false;
-
-  if (useWakeWord) {
-    const daemon = new VoiceDaemon({
-      modelPath,
-      wakePhrase: voiceConfig.wakePhrase ?? "hey claude",
-      silenceTimeout: voiceConfig.silenceTimeout ?? 3.0,
-      terminal: (voiceConfig.terminal as "iterm2" | "terminal" | "auto") ?? "auto",
-    });
-
-    process.on("SIGINT", () => {
-      daemon.stop();
-      console.log("\n");
-      log.dim("  Voice mode exited.");
-      process.exit(0);
-    });
-
-    await daemon.start();
     return;
   }
 

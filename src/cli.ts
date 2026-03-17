@@ -56,8 +56,7 @@ program
 program
   .command("voice")
   .description("Push-to-talk voice input for Claude Code")
-  .option("--wake", "Enable always-on wake word detection (\"Hey Claude\")")
-  .action((options: { wake?: boolean }) => voiceCommand(options));
+  .action(voiceCommand);
 
 program
   .command("speak-response")

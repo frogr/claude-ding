@@ -14,11 +14,8 @@ export const DEFAULT_CONFIG: ClaudeDingConfig = {
   },
   voice: {
     enabled: true,
-    wakeWord: false,
-    wakePhrase: "hey claude",
     autoSend: true,
     terminal: "auto",
-    silenceTimeout: 2.0,
     language: "en",
     whisperModel: "ggml-base.en.bin",
   },

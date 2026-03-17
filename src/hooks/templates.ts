@@ -16,6 +16,10 @@ export function getClaudeDingHooks(): HooksConfig {
             type: "command",
             command: "claude-ding play task-complete",
           },
+          {
+            type: "command",
+            command: "claude-ding speak-response",
+          },
         ],
       },
     ],

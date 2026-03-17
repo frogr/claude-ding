@@ -88,9 +88,18 @@ function findWhisperBinary(): string | null {
   return null;
 }
 
+// Whisper hallucinations on silence/noise — filter these out
+const HALLUCINATION_PATTERNS = [
+  /^\[.*\]$/,                    // [BLANK_AUDIO], [MUSIC], etc.
+  /^\(.*\)$/,                    // (wind blowing), (silence), etc.
+  /^\.+$/,                       // just dots
+  /^you\.?$/i,                   // common hallucination on silence
+  /^thank you\.?$/i,             // another common one
+  /^thanks for watching\.?$/i,   // YouTube training data leakage
+  /^bye\.?$/i,
+];
+
 function parseWhisperOutput(output: string): string {
-  // whisper-cpp outputs transcribed text, possibly with timestamps like [00:00:00.000 --> 00:00:02.000]
-  // With --no-timestamps, it should be clean text, but let's strip timestamps just in case
   const lines = output.split("\n");
   const textLines: string[] = [];
 
@@ -100,9 +109,11 @@ function parseWhisperOutput(output: string): string {
       .replace(/\[\d{2}:\d{2}:\d{2}\.\d{3}\s*-->\s*\d{2}:\d{2}:\d{2}\.\d{3}\]\s*/g, "")
       .trim();
 
-    if (cleaned && !cleaned.startsWith("whisper_") && !cleaned.startsWith("system_info")) {
-      textLines.push(cleaned);
-    }
+    if (!cleaned) continue;
+    if (cleaned.startsWith("whisper_") || cleaned.startsWith("system_info")) continue;
+    if (HALLUCINATION_PATTERNS.some((p) => p.test(cleaned))) continue;
+
+    textLines.push(cleaned);
   }
 
   return textLines.join(" ").trim();
