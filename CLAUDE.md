@@ -32,6 +32,19 @@ This is claude-ding — a sound notification system for Claude Code.
 Placeholder sounds in sounds/ generated via ffmpeg (`scripts/generate-sounds.sh`).
 Each preset has: task-complete, need-input, idle, error, session-start.
 
+## Voice Interaction
+- `claude-ding voice` — push-to-talk (Enter to start/stop recording)
+- `claude-ding speak-response` — hook command that speaks `<tts>` tag content from Claude's response
+- Voice uses SoX (`rec`) for recording and whisper-cpp (`whisper-cli`) for local STT
+- Injection into Claude Code terminal via iTerm2 AppleScript (finds the Claude session automatically)
+
+## TTS Summary Tag
+When the user has voice mode active, Claude should end responses with a `<tts>` tag containing a brief spoken summary. The hook extracts this and speaks it aloud via macOS `say`. Add this to CLAUDE.md in projects where voice interaction is used:
+
+```
+At the end of every response, include a <tts>brief spoken summary</tts> tag. This is read aloud by a text-to-speech system. Keep it to 1-2 natural sentences. Write it conversationally — as if you're telling someone what you just did. No markdown, no code, no file paths. If the task is simple, a few words is fine.
+```
+
 ## Testing hooks locally
 After `npm run build && npm link`:
 ```bash

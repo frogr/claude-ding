@@ -13,7 +13,12 @@ export function loadConfig(): ClaudeDingConfig {
   try {
     const raw = fs.readFileSync(configPath, "utf-8");
     const parsed = JSON.parse(raw);
-    return { ...DEFAULT_CONFIG, ...parsed, tts: { ...DEFAULT_CONFIG.tts, ...parsed.tts } };
+    return {
+      ...DEFAULT_CONFIG,
+      ...parsed,
+      tts: { ...DEFAULT_CONFIG.tts, ...parsed.tts },
+      voice: { ...DEFAULT_CONFIG.voice, ...parsed.voice },
+    };
   } catch {
     return { ...DEFAULT_CONFIG };
   }

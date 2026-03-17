@@ -1,8 +1,52 @@
 import fs from "fs";
 import path from "path";
+import os from "os";
 import { getClaudeSettingsPath, ensureDir } from "../utils/paths.js";
 import { getClaudeDingHooks } from "./templates.js";
 import type { HookEntry } from "./templates.js";
+
+const TTS_MARKER_START = "<!-- claude-ding:tts-start -->";
+const TTS_MARKER_END = "<!-- claude-ding:tts-end -->";
+const TTS_INSTRUCTION = `${TTS_MARKER_START}
+At the end of every response, include a <tts>brief spoken summary</tts> tag. This is read aloud by a text-to-speech system. Keep it to 1-2 natural sentences. Write it conversationally — as if you're telling someone what you just did. No markdown, no code, no file paths. If the task is simple, a few words is fine.
+${TTS_MARKER_END}`;
+
+function getUserClaudeMdPath(): string {
+  return path.join(os.homedir(), ".claude", "CLAUDE.md");
+}
+
+export function installTtsInstruction(): void {
+  const mdPath = getUserClaudeMdPath();
+  ensureDir(path.dirname(mdPath));
+
+  let content = "";
+  if (fs.existsSync(mdPath)) {
+    content = fs.readFileSync(mdPath, "utf-8");
+  }
+
+  // Already installed
+  if (content.includes(TTS_MARKER_START)) return;
+
+  const separator = content.length > 0 && !content.endsWith("\n") ? "\n\n" : content.length > 0 ? "\n" : "";
+  fs.writeFileSync(mdPath, content + separator + TTS_INSTRUCTION + "\n", "utf-8");
+}
+
+export function uninstallTtsInstruction(): void {
+  const mdPath = getUserClaudeMdPath();
+  if (!fs.existsSync(mdPath)) return;
+
+  let content = fs.readFileSync(mdPath, "utf-8");
+  if (!content.includes(TTS_MARKER_START)) return;
+
+  // Remove the TTS block and any surrounding blank lines it created
+  const regex = new RegExp(`\\n?${TTS_MARKER_START}[\\s\\S]*?${TTS_MARKER_END}\\n?`, "g");
+  content = content.replace(regex, "\n");
+
+  // Trim trailing whitespace
+  content = content.replace(/\n{3,}/g, "\n\n").trimEnd() + "\n";
+
+  fs.writeFileSync(mdPath, content, "utf-8");
+}
 
 function isClaudeDingHook(entry: HookEntry): boolean {
   return entry.hooks.some((h) => h.command.startsWith("claude-ding"));
@@ -35,6 +79,9 @@ export function installHooks(): { installed: boolean; path: string } {
 
   settings.hooks = existingHooks;
   fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + "\n", "utf-8");
+
+  // Inject TTS instruction into user's CLAUDE.md so Claude includes <tts> tags
+  installTtsInstruction();
 
   return { installed: true, path: settingsPath };
 }
@@ -77,6 +124,9 @@ export function uninstallHooks(): { removed: boolean; path: string } {
   }
 
   fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + "\n", "utf-8");
+
+  // Remove TTS instruction from user's CLAUDE.md
+  uninstallTtsInstruction();
 
   return { removed: removedAny, path: settingsPath };
 }

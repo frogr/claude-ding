@@ -12,4 +12,11 @@ export const DEFAULT_CONFIG: ClaudeDingConfig = {
     readResponses: false,
     readSummary: false,
   },
+  voice: {
+    enabled: true,
+    autoSend: true,
+    terminal: "auto",
+    language: "en",
+    whisperModel: "ggml-base.en.bin",
+  },
 };

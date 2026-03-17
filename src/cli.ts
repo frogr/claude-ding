@@ -7,6 +7,8 @@ import { installCommand } from "./commands/install-hooks.js";
 import { uninstallCommand } from "./commands/uninstall.js";
 import { playCommand } from "./commands/play.js";
 import { ttsCommand } from "./commands/tts.js";
+import { voiceCommand } from "./commands/voice.js";
+import { speakResponseCommand } from "./commands/speak-response.js";
 import { soundsListCommand, soundsSetCommand, soundsResetCommand } from "./commands/sounds.js";
 import { PRESETS } from "./sounds/presets.js";
 import { loadConfig, updateConfig } from "./config/loader.js";
@@ -50,6 +52,16 @@ program
   .description("Speak text using TTS (coming soon)")
   .option("--from-stdin", "Read text from stdin")
   .action(ttsCommand);
+
+program
+  .command("voice")
+  .description("Push-to-talk voice input for Claude Code")
+  .action(voiceCommand);
+
+program
+  .command("speak-response")
+  .description("Speak Claude's last response via TTS (used by hooks)")
+  .action(speakResponseCommand);
 
 program
   .command("preset [name]")

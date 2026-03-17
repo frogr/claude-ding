@@ -20,6 +20,14 @@ export interface ClaudeDingConfig {
     readSummary: boolean;
   };
 
+  voice?: {
+    enabled: boolean;
+    autoSend: boolean;
+    terminal: "iterm2" | "terminal" | "auto";
+    language: string;
+    whisperModel: string;
+  };
+
   quietHours?: {
     enabled: boolean;
     start: string;
